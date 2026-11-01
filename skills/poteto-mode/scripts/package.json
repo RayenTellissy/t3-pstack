@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test \"orch/*.test.ts\" \"watch-pr/*.test.ts\" check-plan.test.ts",
+    "test": "node --test \"watch-pr/*.test.ts\" check-plan.test.ts",
     "typecheck": "tsc --project watch-pr/tsconfig.json --noEmit --strict"
   },
   "dependencies": {

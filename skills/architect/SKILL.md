@@ -12,7 +12,7 @@ Sketch types, function signatures, class shapes, and module boundaries with `not
 
 ## Start
 
-Open a task list (`TaskCreate` and `TaskUpdate`, or `TodoWrite` where that is the todo tool) with one entry per phase before starting.
+Open a task list (`TaskCreate` and `TaskUpdate`, or `TodoWrite` where that is the todo tool; with neither, keep it in your reply and update it at each phase) with one entry per phase before starting.
 
 1. Ground
 2. Sketch

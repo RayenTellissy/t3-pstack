@@ -99,6 +99,7 @@ export interface Matchers {
   toHaveLength(expected: number): void;
   toBeInstanceOf(expected: ErrorClass): void;
   toBeNull(): void;
+  toBeUndefined(): void;
   toEndWith(expected: string): void;
   toThrow(expected?: ThrowExpectation): void;
 }
@@ -155,6 +156,9 @@ function matchers(actual: unknown, negated: boolean): Matchers {
     },
     toBeNull() {
       check(actual === null, negated, () => `expected ${show(actual)} to be null`);
+    },
+    toBeUndefined() {
+      check(actual === undefined, negated, () => `expected ${show(actual)} to be undefined`);
     },
     toEndWith(expected) {
       check(

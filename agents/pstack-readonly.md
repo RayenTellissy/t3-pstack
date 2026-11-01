@@ -1,6 +1,6 @@
 ---
 name: pstack-readonly
-description: Read-only pstack worker for review panels, explorers, and explainers that skills such as `how` and `interrogate` spawn. Reads code and runs read-only commands. Never edits files. Has no MCP tools, so skills that need MCP evidence spawn `general-purpose` instead.
+description: Read-only pstack worker for review panels, explorers, and explainers that skills such as `how` and `arena` spawn. Reads code and runs read-only commands. Never edits files. Has no MCP tools, so skills that need MCP evidence spawn `general-purpose` instead.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 

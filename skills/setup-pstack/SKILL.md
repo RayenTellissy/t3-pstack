@@ -19,7 +19,7 @@ The default role-to-model mapping is the file shape shown in step 5 below. If `~
 
 ### 3. Budget, map, and confirm
 
-**(a) Ask for a budget.** Use `AskUserQuestion`. Offer these four options with these exact labels, and name the current budget when the file records one. With no file, say that `large` matches the skill defaults.
+**(a) Ask for a budget.** Use `AskUserQuestion`, or plain text in `-p` mode, where that tool is absent. Offer these four options with these exact labels, and name the current budget when the file records one. With no file, say that `large` matches the skill defaults.
 
 - `unlimited (max effort)`
 - `large (xhigh effort)`
@@ -28,7 +28,7 @@ The default role-to-model mapping is the file shape shown in step 5 below. If `~
 
 **(b) Apply it.** Build the working table from the skill defaults, and on a re-run keep any role you changed by model, list, or alias (`inherit`). `unlimited`, `medium`, and `small` set the effort of every entry, panel entries included, to `max`, `high`, or `medium`. `inherit` does not change. So `unlimited` turns `fable high` into `fable max`. `large` keeps the defaults: every `fable` entry, the code-writing roles (feature, refactoring, bug-fix, perf-issue, hillclimb), `reflect tooling`, and `swarm workers` at `high`, `how explorer` at `medium`, and the other `opus` entries at `xhigh`. `small` turns them into `fable medium` and `opus medium`.
 
-**(c) Show the roles and confirm.** Show every role with its model and effort. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles, offering `fable`, `opus`, and `inherit` as the options. Use `AskUserQuestion`. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, `inherit` entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena selects one value from it whose model differs from the parent's when possible. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
+**(c) Show the roles and confirm.** Show every role with its model and effort. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles, offering `fable`, `opus`, and `inherit` as the options. Use `AskUserQuestion`, or plain text in `-p` mode. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, `inherit` entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena runs one judge. It tries only values on a model other than the parent's, in list order, so order it by preference. An `inherit` value never judges. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
 
 ### 4. Validate
 

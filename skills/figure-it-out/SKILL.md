@@ -12,7 +12,7 @@ When the task matches no playbook, design one. The deliverable before any code i
 
 ## Start
 
-Open a task list (`TaskCreate` and `TaskUpdate`, or `TodoWrite` where that is the todo tool) whose first item is to read the Principles section of the **poteto-mode** skill. Then add the phases below as todos.
+Open a task list (`TaskCreate` and `TaskUpdate`, or `TodoWrite` where that is the todo tool; with neither, keep it in your reply and update it at each phase) whose first item is to read the Principles section of the **poteto-mode** skill. Then add the phases below as todos.
 
 ## Phase A: Frame
 

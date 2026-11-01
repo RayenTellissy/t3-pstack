@@ -10,11 +10,11 @@ The full README is [`pstack/README.md`](pstack/README.md). The walkthrough is th
 curl -fsSL https://raw.githubusercontent.com/RayenTellissy/pstack-claude/main/install.sh | sh
 ```
 
-The script downloads `main` and copies `skills`, `agents`, `output-styles`, and `pstack` into `~/.claude/`. Run the same command again to update. It keeps your model config and your own skills, but it overwrites any edits you made to the installed pstack skills. From a clone, `cp -R skills agents output-styles pstack ~/.claude/` does the same.
+The script downloads `main` and copies `skills`, `agents`, `output-styles`, and `pstack` into `~/.claude/`. Run the same command again to update. It replaces each pstack skill, agent, and output style and the guide, and removes any that upstream dropped. It keeps your model config, run stores, and your own skills, but you lose any edits or added files inside the installed pstack skills, and a skill of yours with the same name as a pstack skill is replaced. From a clone, `cp -R skills agents output-styles pstack ~/.claude/` works for a first install, but it removes nothing when you update.
 
 Start a new Claude Code session, then run `/setup-pstack` to pick a reasoning budget, or skip it to keep the defaults. Use `/poteto-mode` at the start of any task that needs rigor. To keep it on every turn, run `/output-style poteto-mode`.
 
-The poteto-mode scripts (`orch`, `watch-pr`) and the `/statechart` scripts need [Node.js](https://nodejs.org) 22.18 or later. `/statechart` also installs TLC and Java with [mise](https://mise.jdx.dev) on its first run.
+The poteto-mode `watch-pr` script and the `/statechart` scripts need [Node.js](https://nodejs.org) 22.18 or later. `/statechart` also installs TLC and Java with [mise](https://mise.jdx.dev) on its first run.
 
 ## What changed from upstream
 
