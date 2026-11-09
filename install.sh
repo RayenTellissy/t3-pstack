@@ -11,7 +11,8 @@ previous_manifest="$dest/pstack/.installed"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-command -v node >/dev/null 2>&1 || { echo "t3-pstack needs Node.js 22.18 or later on PATH." >&2; exit 1; }
+node -e 'const [major, minor] = process.versions.node.split(".").map(Number); process.exit(major > 22 || (major === 22 && minor >= 18) ? 0 : 1)' 2>/dev/null ||
+  { echo "t3-pstack needs Node.js 22.18 or later on PATH." >&2; exit 1; }
 
 if [ -n "${PSTACK_SRC:-}" ]; then
   src="$PSTACK_SRC"
