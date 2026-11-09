@@ -35,7 +35,7 @@ When the model config is missing and it matters, ask whether the user wants to p
 
 ## Get set up
 
-1. Install with `curl -fsSL https://raw.githubusercontent.com/RayenTellissy/pstack-claude/main/install.sh | sh`. The same command updates pstack later. Restart Claude Code so it loads the new agents and the output style.
+1. Install with `curl -fsSL https://raw.githubusercontent.com/RayenTellissy/t3-pstack/main/install.sh | sh`, or `PSTACK_SRC=<checkout> sh install.sh` from a local checkout. The same command updates pstack later. It also installs the pstack hooks in `~/.claude/settings.json`. Start a new T3 Code thread so it loads the new agents, hooks, and output style.
 2. Run [`/setup-pstack`](../setup-pstack/SKILL.md). It asks for a reasoning budget, maps a model to each role, and writes `~/.claude/pstack/models.md`. Skills read that file when they pick a model, so it applies from the next task. Then it offers once each to generate a verification skill and a formal verification skill for the project, unless the project already has one.
 3. Start a real task with `/poteto-mode`, a goal, and a check that can pass or fail.
 
@@ -43,11 +43,11 @@ Installing changes nothing until the user invokes a skill. Only `/setup-pstack` 
 
 If cost is the worry, say where the tokens go and how to spend fewer. pstack spends extra tokens on subagents and review panels. Rerun `/setup-pstack` and pick a smaller budget, which lowers every role's `effort`. A role set to `inherit` runs on the chat's model and effort, which saves tokens when the chat runs on a cheaper model or a lower effort. A shorter panel list runs fewer subagents, one for each entry. Save `/poteto-mode` for work that needs rigor.
 
-This is a Claude Code port of poteto's pstack. The upstream is [pstack in cursor/plugins](https://github.com/cursor/plugins/tree/main/pstack). The port runs on two models, Fable and Opus.
+This is t3-pstack, the T3 Code build of poteto's pstack. The upstream is [pstack in cursor/plugins](https://github.com/cursor/plugins/tree/main/pstack). Roles run on Opus and Fable through the Agent tool, and on Codex models through `delegate_task` when `/setup-pstack` assigns them. [`t3-harness.md`](../poteto-mode/references/t3-harness.md) holds the T3 rules every skill follows.
 
 ## Start a task with `/poteto-mode`
 
-`/poteto-mode` matches the task to a playbook, copies the playbook's steps into a task list (`TaskCreate` and `TaskUpdate`, or `TodoWrite` where that is the todo tool), and runs the other skills as the steps need them. A step it skips stays in the list as `skip: <reason>`. A good prompt states the goal and how to tell it's done. It doesn't list skills, because a hand-written sequence tends to drop or reorder steps the playbook would keep. Read [`references/prompting.md`](references/prompting.md) before you help word one. [Guide page 2](../../pstack/docs/guide/02-poteto-mode.md) has examples.
+`/poteto-mode` matches the task to a playbook, copies the playbook's steps into the step ledger (`~/.claude/skills/poteto-mode/scripts/steps`), and runs the other skills as the steps need them. A step it skips stays in the ledger as `skip: <reason>`. `steps show` prints the ledger at any point. A good prompt states the goal and how to tell it's done. It doesn't list skills, because a hand-written sequence tends to drop or reorder steps the playbook would keep. Read [`references/prompting.md`](references/prompting.md) before you help word one. [Guide page 2](../../pstack/docs/guide/02-poteto-mode.md) has examples.
 
 Whether `/poteto-mode` stays on depends on how the user starts it:
 
@@ -111,7 +111,7 @@ Close calls:
 Not in pstack:
 
 - `/simplify` and `/loop` are Claude Code built-ins.
-- The browser automation tools `/poteto-mode` drives UIs with (Claude in Chrome, the built-in browser, a Playwright MCP, or the **playwright-cli** skill) and the **skill-creator** skill are separate from pstack.
+- The browser automation tools `/poteto-mode` drives UIs with (T3's preview tools, Claude in Chrome, the built-in browser, a Playwright MCP, or the **playwright-cli** skill), T3's device tools, and the **skill-creator** skill are separate from pstack.
 - pstack has no `/orchestrate` skill. Orchestrate is a `/poteto-mode` playbook. If the slash menu shows `/orchestrate`, another skill or plugin provides it.
 
 ## Playbooks and principles
@@ -140,7 +140,8 @@ Principles are one-rule skills that `/poteto-mode` reads and cites in its replie
 | A new model choice had no effect | `/poteto-mode` reads `~/.claude/pstack/models.md` at task start. Say "new task" so it reads the file again. |
 | Runs cost more than expected | See the cost paragraph under Get set up. |
 | A skill didn't load on its own | Only `/setup-pstack` loads from the user's words. The others load when the user types them or when `/poteto-mode` runs them, and it doesn't run every skill. |
-| Parallel agents overwrote each other | Give each agent its own worktree. The Agent tool's `isolation: "worktree"` creates one per subagent. |
+| Parallel agents overwrote each other | Give each agent its own worktree. Under T3, `delegate_task` with `isolation: "worktree"` creates one per child. |
+| A hook blocked a reply, a PR, or an Agent call | The block names the fix. The hooks enforce poteto-mode's own rules: cite only principles read this session, keep a step ledger, run the Opening a PR gates, and spawn T3 subagents in the foreground. `touch ~/.claude/pstack/hooks.debug` logs each decision to `~/.claude/pstack/hooks.log`. |
 | An overnight run moved but finished nothing | `/loop` needs a check that can pass or fail, not a duration. See [guide page 7](../../pstack/docs/guide/07-overnight.md). |
 | The reply claims success from a green build | Ask for the real command, flow, stored value, or profile. That's the prove-it-works principle. |
 

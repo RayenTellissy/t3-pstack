@@ -2,7 +2,9 @@
 
 **You run the program, never the code. Decide which agent does each piece of work, then check what each one produces.** For a standing project handed to one coordinator chat: multi-day, many stacked PRs, dozens to hundreds of subagents, few human turns. One task driven to a predicate is Autonomous run. One ambitious run that needs a bespoke workflow is figure-it-out. Work that one agent could finish inside the session's budget is not a program.
 
-Run it with your own tools. Spawn workers with the Agent tool. Keep the program's state in `notes.md` in the store at `~/.claude/pstack/orchestrate/<project-slug>/`. Watch each PR with PR and CI event subscriptions when your session has them. Call no scripts, run no polling loops, and never relay messages or status between agents.
+Run it with your own tools. Spawn workers with the Agent tool. Keep the program's state in `notes.md` in the store at `~/.claude/pstack/orchestrate/<project-slug>/`. Watch each PR with PR and CI event subscriptions when your session has them.
+
+Under T3, follow `~/.claude/skills/poteto-mode/references/t3-harness.md`. Workers and owners are `delegate_task` children (`isolation: "worktree"`, `mode: "async"`), because they outlive your turn. PR subscriptions are `watch_pull_request`, and each child's completion wakes you. A follow-up that needs a child's built state goes to its thread with `t3_thread_send`. A review, re-check, or fix round is a new `delegate_task`. Call no scripts, run no polling loops, and never relay messages or status between agents.
 
 #### Topology
 
@@ -10,7 +12,7 @@ Run it with your own tools. Spawn workers with the Agent tool. Keep the program'
 - **A fresh worker for each independent task.** Its kickoff carries everything it needs, including each upstream report it depends on, pasted in full. Workers can't see their siblings. Run workers with `isolation: "worktree"` unless the work needs the user's own checkout, such as its uncommitted changes or a process running from it, and name the branch or commit each worker checks out. Never use `isolation: "remote"`. Workers stay local so they can read the store. Pick each subagent's effort for the job, per the Subagents section.
 - **A sub-coordinator only when one area has many parallel workers.** It owns that area's workers and kickoffs and sends you one rollup, never raw worker reports. Stop at three levels: you, sub-coordinators, and workers. Keep about ten workers in flight per coordinator, and start the next one as each finishes instead of waiting on a whole batch.
 - **Message a worker (`SendMessage`) when new work needs its built state,** such as its checkout, uncommitted changes, or a running process, or for a follow-up on the same work. Never message one to check on it, because a message restarts an idle agent.
-- **Each PR gets a verifier that isn't its author,** on a different model (`fable` against `opus`). The owner merges only on that verifier's pass at the current head.
+- **Each PR gets a verifier that isn't its author,** on a different model (`fable` against `opus`, or a `codex/` model under T3). The owner merges only on that verifier's pass at the current head.
 - **Start with one unit.** Take it through kickoff, owner, verifier, and merge before you fan out, so a flaw in the kickoff costs one agent instead of fifty. On near-identical cheap units, the first unit is that test.
 
 #### Supervision

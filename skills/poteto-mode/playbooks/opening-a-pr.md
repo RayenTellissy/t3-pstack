@@ -21,7 +21,7 @@ Invoked at the end of every other playbook.
 
 After the sections, attach videos or screenshots when they prove a claim. Full SHAs, swarm or arena lane recitals, lever-correction essays, file-by-file checklists, and "CLEAN" verdicts go in a linked artifact, not the body.
 
-**Forge.** Use the GitHub CLI (`gh`) for create, edit, view, watch, and merge. Do not require Graphite (`gt`).
+**Forge.** Use the GitHub CLI (`gh`) for create, edit, view, watch, and merge. Do not require Graphite (`gt`). A hook blocks `gh pr create` in a poteto-mode session until `/simplify`, `/no-comments`, **technical-writing**, and **unslop** have run. Under T3, the call after `gh pr create` is `link_pull_request`, or `link_pull_requests` with every layer of a stack. Waiting on the PR follows the PRs section of `~/.claude/skills/poteto-mode/references/t3-harness.md`.
 
 **Built-in PR tool.** When the run provides a built-in PR tool, create, edit, retarget, and mark ready through it, never through a forge CLI. A CLI-made PR misses what the tool tracks. Use `gh` for everything the tool does not cover, and for every PR operation when the run has no such tool.
 
