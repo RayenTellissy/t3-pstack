@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Explore the codebase to answer "how does X work?" questions. Produce architectural explanations at the level of a senior engineer onboarding onto a subsystem, enough to build a working mental model, not so much that it reads like annotated source code.
 
-Every spawn is an Agent subagent with `subagent_type: "pstack-readonly"`. Explorers use the `how explorer` line in `~/.claude/pstack/models.md` (default `opus medium`), and every explainer uses the `how explainer` line (default `opus xhigh`). Pass that line's model and effort as the Agent call's `model` and `effort`, or the default if the file or the line is missing. Omit both when the value is `inherit`. If the line names a model other than `fable` or `opus`, use the default and say so. Pick each subagent's effort for the job, per the Subagents section of the **poteto-mode** skill.
+Every spawn is an Agent subagent with `subagent_type: "pstack-readonly"`. Explorers use the `how explorer` line in `~/.claude/pstack/models.md` (default `opus medium`), and every explainer uses the `how explainer` line (default `opus xhigh`). Pass that line's model and effort as the Agent call's `model` and `effort`, or the default if the file or the line is missing. Omit both when the value is `inherit`. A `codex/<model>` value is also valid under T3. The Spawning section of `~/.claude/skills/poteto-mode/references/t3-harness.md` says which tool runs each value. A value it does not cover falls back to the default, so say so. Pick each subagent's effort for the job, per the Subagents section of the **poteto-mode** skill (`~/.claude/skills/poteto-mode/SKILL.md`).
 
 ## 1. Assess complexity
 

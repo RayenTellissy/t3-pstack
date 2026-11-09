@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+import { add, load, mark, note, render, start } from "./steps-lib.mjs";
+
+const [cmd, ...args] = process.argv.slice(2);
+const usage = `usage:
+  steps start <playbook>
+  steps add "<item>" ["<item>" ...]
+  steps done <n> ["<evidence>"]
+  steps skip <n> "<reason>"
+  steps note "<text>"
+  steps show [--full]`;
+
+try {
+  let ledger;
+  switch (cmd) {
+    case "start":
+      if (!args[0]) throw new Error(usage);
+      ledger = start(args[0]);
+      break;
+    case "add":
+      ledger = add(args);
+      break;
+    case "done":
+    case "skip":
+      ledger = mark(args[0], cmd, args.slice(1).join(" "));
+      break;
+    case "note":
+      ledger = note(args.join(" "));
+      break;
+    case "show":
+      ledger = load();
+      break;
+    default:
+      throw new Error(usage);
+  }
+  console.log(render(ledger, { full: args.includes("--full") }));
+} catch (err) {
+  console.error(err.message);
+  process.exit(1);
+}

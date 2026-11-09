@@ -26,7 +26,7 @@ This session's subagent transcripts sit beside it at `<project>/<session-id>/sub
 
 One message, three Agent calls, `subagent_type: "general-purpose"`. Reviewers need MCP access to look up the tickets, chat threads, and observability traces the transcript references, and `pstack-readonly` has no MCP tools.
 
-Each reviewer and the synthesizer name a role line in `~/.claude/pstack/models.md` and a default. Pass that line's model and effort as the Agent call's `model` and `effort`, or the default if the file or the line is missing. Omit both when the value is `inherit`. If the line names a model other than `fable` or `opus`, use the default and say so. Pick each subagent's effort for the job, per the Subagents section of the **poteto-mode** skill.
+Each reviewer and the synthesizer name a role line in `~/.claude/pstack/models.md` and a default. Pass that line's model and effort as the Agent call's `model` and `effort`, or the default if the file or the line is missing. Omit both when the value is `inherit`. A `codex/<model>` value is also valid under T3. The Spawning section of `~/.claude/skills/poteto-mode/references/t3-harness.md` says which tool runs each value. A value it does not cover falls back to the default, so say so. Pick each subagent's effort for the job, per the Subagents section of the **poteto-mode** skill (`~/.claude/skills/poteto-mode/SKILL.md`).
 
 | Lens | Role line | Default `model` | Default `effort` | Prompt template |
 |---|---|---|---|---|
