@@ -31,6 +31,7 @@ function run(box, event, input, env = {}) {
     input: JSON.stringify({ session_id: box.session, transcript_path: box.transcript, ...input }),
     env: { ...process.env, PSTACK_HOME: box.home, ...CLEAN_ENV, ...env },
     encoding: "utf8",
+    timeout: 5000,
   });
   return out ? JSON.parse(out) : null;
 }
@@ -129,7 +130,7 @@ test("reading no-comments is not its comment-sicko pass, and gh global flags do 
   const box = sandbox();
   const reads = ["no-comments", "technical-writing", "unslop"].map((s) => tool("Read", { file_path: `/u/.claude/skills/${s}/SKILL.md` }));
   write(box.transcript, [POTETO, tool("Skill", { skill: "simplify" }), ...reads]);
-  for (const command of ["gh pr create --fill", "gh --repo o/r pr create --fill", "gh -R o/r pr  create", "gh --repo o/r \\\n pr create --fill", "gh pr cre\\\nate --fill", "gh 'pr' 'create' --fill", "gh pr c\\reate", "gh p'r' create", "gh p\\r new"]) {
+  for (const command of ["gh pr create --fill", "gh --repo o/r pr create --fill", "gh -R o/r pr  create", "gh --repo o/r \\\n pr create --fill", "gh pr cre\\\nate --fill", "gh 'pr' 'create' --fill", "gh pr c\\reate", "gh p'r' create", "gh p\\r new", "gh pr --repo o/r create", "gh --repo=o/r pr -R o/r --verbose new"]) {
     const reason = run(box, "pre-tool", { tool_name: "Bash", tool_input: { command } }).hookSpecificOutput.permissionDecisionReason;
     assert.match(reason, /comment-sicko pass/);
     assert.doesNotMatch(reason, /unslop/);
@@ -154,7 +155,10 @@ test("pre-tool counts gates that ran in subagent transcripts", () => {
 test("pre-tool leaves other Bash calls and non-poteto sessions alone", () => {
   const box = sandbox();
   write(box.transcript, [POTETO]);
-  assert.equal(run(box, "pre-tool", { tool_name: "Bash", tool_input: { command: "gh pr view 12" } }), null);
+  const manyFlags = "gh " + Array.from({ length: 40 }, (_, i) => `--f${i} v${i}`).join(" ") + " ---x";
+  for (const command of ["gh pr view 12", "gh pr list --search create", "gh issue create --title 'pr create'", manyFlags]) {
+    assert.equal(run(box, "pre-tool", { tool_name: "Bash", tool_input: { command } }), null, command);
+  }
   const plain = sandbox();
   write(plain.transcript, [prompt("open a pr")]);
   assert.equal(run(plain, "pre-tool", prCreate), null);

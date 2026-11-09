@@ -4,7 +4,8 @@ import path from "node:path";
 import { ledgerFile, potetoIndex, PSTACK_DIR, runDir, writeJson } from "../../skills/poteto-mode/scripts/steps-lib.mjs";
 import { isPoteto, missingGates, scanFile, sessionFacts, toolKind } from "./transcript.mjs";
 
-const PR_CREATE = /\bgh\b[^\n;&|]*?\spr\s+(create|new)\b/;
+const FLAGS = String.raw`(?:\s+--?\w[\w-]*(?:[=\s]+[^\s-]\S*)?)*`;
+const PR_CREATE = new RegExp(String.raw`\bgh${FLAGS}\s+pr${FLAGS}\s+(create|new)\b`);
 const unquote = (command) => command.replace(/\\\r?\n/g, "").replace(/\\(.)/g, "$1").replace(/["']/g, "");
 const HARNESS = "`~/.claude/skills/poteto-mode/references/t3-harness.md` (Spawning)";
 const GATE_HELP = {
