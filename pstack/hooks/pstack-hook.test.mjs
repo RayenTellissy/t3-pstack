@@ -129,7 +129,7 @@ test("reading no-comments is not its comment-sicko pass, and gh global flags do 
   const box = sandbox();
   const reads = ["no-comments", "technical-writing", "unslop"].map((s) => tool("Read", { file_path: `/u/.claude/skills/${s}/SKILL.md` }));
   write(box.transcript, [POTETO, tool("Skill", { skill: "simplify" }), ...reads]);
-  for (const command of ["gh pr create --fill", "gh --repo o/r pr create --fill", "gh -R o/r pr  create"]) {
+  for (const command of ["gh pr create --fill", "gh --repo o/r pr create --fill", "gh -R o/r pr  create", "gh --repo o/r \\\n pr create --fill"]) {
     const reason = run(box, "pre-tool", { tool_name: "Bash", tool_input: { command } }).hookSpecificOutput.permissionDecisionReason;
     assert.match(reason, /comment-sicko pass/);
     assert.doesNotMatch(reason, /unslop/);

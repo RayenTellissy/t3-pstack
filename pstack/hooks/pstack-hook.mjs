@@ -81,7 +81,7 @@ function onPreTool(input) {
     return null;
   }
 
-  const createsPr = (kind === "Bash" && PR_CREATE.test(String(toolInput.command || ""))) || /create_pull_request$/.test(String(input.tool_name));
+  const createsPr = (kind === "Bash" && PR_CREATE.test(String(toolInput.command || "").replace(/\\\r?\n/g, " "))) || /create_pull_request$/.test(String(input.tool_name));
   if (!createsPr) return null;
   const facts = potetoFacts(input, true);
   const missing = facts ? missingGates(facts) : [];
