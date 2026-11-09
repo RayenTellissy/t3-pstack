@@ -23,3 +23,5 @@ jobs:
 
       - working-directory: skills/poteto-mode/scripts
         run: npm ci && npm test
+
+      - run: node --test scripts/node-floor.test.mjs

@@ -1,6 +1,10 @@
 #!/usr/bin/env node
-import { ensureDependenciesInstalled } from "../bootstrap.ts";
-
+const [major, minor] = process.versions.node.split(".").map(Number);
+if (!((major === 22 && minor >= 18) || (major === 23 && minor >= 6) || major > 23)) {
+  process.stderr.write(`watch-pr needs Node 22.18 to 22.x or Node 23.6 or later, and found Node ${process.versions.node}.\n`);
+  process.exit(127);
+}
+const { ensureDependenciesInstalled } = await import("../bootstrap.ts");
 ensureDependenciesInstalled();
 const { main } = await import("./cli.ts");
 process.exitCode = await main(process.argv.slice(2));

@@ -12,7 +12,7 @@ curl -fsSL https://raw.githubusercontent.com/RayenTellissy/pstack-claude/main/in
 
 The script copies `skills`, `agents`, `output-styles`, and `pstack` from the repository's `main` branch into `~/.claude/`. To update later, run the same command, which also removes anything upstream dropped. It keeps your model config, run stores, and your own skills, but you lose any edits or added files inside the installed pstack skills.
 
-Then start a new Claude Code session, so it loads the new skills, agents, and output style. The poteto-mode `watch-pr` script and the `/statechart` scripts need Node.js 22.18 or later. `/statechart` also installs TLC and Java with [mise](https://mise.jdx.dev) on its first run. Nothing else needs them.
+Then start a new Claude Code session, so it loads the new skills, agents, and output style. The poteto-mode `watch-pr` script and the `/statechart` scripts need Node.js 22.18 to 22.x, or 23.6 or later. `/statechart` also installs TLC and Java with [mise](https://mise.jdx.dev) on its first run. Nothing else needs them.
 
 ## Pick your models
 

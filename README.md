@@ -14,7 +14,7 @@ From a local checkout, run `PSTACK_SRC=$PWD sh install.sh`.
 
 The script copies `skills`, `agents`, `output-styles`, and `pstack` into `~/.claude/`, and adds the pstack hooks to `~/.claude/settings.json`. It backs the settings up to `settings.json.bak-pstack` first. Run the same command again to update. It keeps your model config, run stores, your own skills, and your other hooks. `node scripts/install-hooks.mjs --uninstall` removes the pstack hooks.
 
-Start a new T3 Code thread, then run `/setup-pstack` to pick a budget and models, or skip it to keep the defaults. Use `/poteto-mode` at the start of any task that needs rigor. To keep it on every turn, run `/output-style poteto-mode`. The scripts need [Node.js](https://nodejs.org) 22.18 or later.
+Start a new T3 Code thread, then run `/setup-pstack` to pick a budget and models, or skip it to keep the defaults. Use `/poteto-mode` at the start of any task that needs rigor. To keep it on every turn, run `/output-style poteto-mode`. The scripts need [Node.js](https://nodejs.org) 22.18 to 22.x, or 23.6 or later.
 
 ## What T3 changes
 
