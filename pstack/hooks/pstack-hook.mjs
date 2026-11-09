@@ -4,7 +4,7 @@ import path from "node:path";
 import { ledgerFile, potetoIndex, PSTACK_DIR, runDir, writeJson } from "../../skills/poteto-mode/scripts/steps-lib.mjs";
 import { isPoteto, missingGates, scanFile, sessionFacts, toolKind } from "./transcript.mjs";
 
-const PR_CREATE = /\bgh\s+pr\s+create\b/;
+const PR_CREATE = /\bgh\b[^\n;&|]*?\spr\s+create\b/;
 const HARNESS = "`~/.claude/skills/poteto-mode/references/t3-harness.md` (Spawning)";
 const GATE_HELP = {
   simplify: "`/simplify` over the diff",

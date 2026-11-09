@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 export const GATES = ["simplify", "no-comments", "technical-writing", "unslop"];
-const SCAN_VERSION = 3;
+const SCAN_VERSION = 4;
 const CHUNK = 8 * 1024 * 1024;
 const READ_VERB = /(^|[\s;&|(])(cat|sed|head|tail|less|more|bat|awk|nl)\s/;
 const LOADED_TEXT = /<command-name>\/([a-z0-9:-]+)<\/command-name>|^Base directory for this skill: \S*\/([a-z0-9-]+)\s*$/gm;
@@ -16,7 +16,7 @@ function add(list, value) {
 const skillName = (raw) => raw.replace(/^\//, "").split(":").pop();
 
 export function toolKind(name) {
-  const m = String(name || "").match(/(?:^|_)(Read|Bash|Skill|Agent|Task)$/);
+  const m = String(name || "").match(/(?:^|_)(Read|Bash|Skill|Agent|Task|delegate_task)$/);
   return m && (m[1] === "Task" ? "Agent" : m[1]);
 }
 
@@ -52,6 +52,7 @@ function applyLine(facts, line) {
       if (input.command.includes("SKILL.md")) for (const m of input.command.matchAll(/\b(principle-[a-z0-9]+(?:-[a-z0-9]+)*)\b/g)) add(facts.loaded, m[1]);
     } else if (kind === "Skill" && typeof input.skill === "string") add(facts.loaded, skillName(input.skill));
     else if (kind === "Agent" && input.subagent_type === "comment-sicko") add(facts.loaded, "comment-sicko");
+    else if (kind === "delegate_task" && /agents\/comment-sicko\.md/.test(String(input.task || ""))) add(facts.loaded, "comment-sicko");
   }
 }
 
@@ -93,7 +94,7 @@ export function scanFile(file, cache) {
 export const isPoteto = (facts) => facts.loaded.includes("poteto-mode");
 
 export function missingGates(facts) {
-  const ran = (gate) => facts.loaded.includes(gate) || (gate === "no-comments" && facts.loaded.includes("comment-sicko"));
+  const ran = (gate) => facts.loaded.includes(gate === "no-comments" ? "comment-sicko" : gate);
   return GATES.filter((gate) => !ran(gate));
 }
 

@@ -32,6 +32,7 @@ Use the Agent tool when the child needs no separate checkout and finishes inside
 - **Never** pass `run_in_background: true` or `isolation` to the Agent tool. A hook blocks both. A separate checkout is `delegate_task` with `isolation: "worktree"`. Never make a child's checkout in the shell.
 - Call `orchestrator_capabilities` once per thread before the first `delegate_task`. When it does not list a value's provider or model, treat the value as rejected, follow the calling skill's fallback, and say so.
 - A `delegate_task` child has no `subagent_type`. Open its task with the role. For `poteto-agent`, `pstack-readonly`, or `comment-sicko`, the first line is "Read `~/.claude/agents/<type>.md` in full and act as that agent." A `general-purpose` child needs no such line. A child also gets no parent history, so its brief stands alone, the same as an Agent brief.
+- `delegate_task` runs a child only in this thread's own project, and it rejects a `target.projectId` for any other project. A thread that works on a repo from outside that repo's project, such as a scratch thread, cannot start a worktree child for the repo. Tell the user that a worktree child needs a thread in the repo's project. Start a shared child only when the work needs no separate checkout.
 - A worktree child starts from the parent's current commit, and uncommitted edits stay out. When the child needs them, write them to a patch (`git diff HEAD > <run-dir>/scope.patch`) and tell the child to `git apply` it first. Every brief still names the exact SHA it works on.
 
 ### Parallel fan-out
@@ -69,5 +70,5 @@ Use the Agent tool when the child needs no separate checkout and finishes inside
 t3-pstack installs hooks that turn the rules below into checks. A blocked call or reply names the fix. Make the fix and never route around the hook.
 
 - **Stop.** In a poteto-mode session, the hook blocks a reply that names a principle whose leaf `SKILL.md` this session never read. It also blocks a session that opened a playbook without a step ledger.
-- **PreToolUse on `gh pr create`.** In a poteto-mode session, the hook blocks a PR until this session, or one of its subagents, has run `/simplify`, `/no-comments`, **technical-writing**, and **unslop**.
+- **PreToolUse on `gh pr create`.** In a poteto-mode session, the hook blocks a PR until this session, or one of its subagents, has run `/simplify` and the comment-sicko pass from `/no-comments`, and has read **technical-writing** and **unslop**. Reading `no-comments/SKILL.md` alone does not count. The comment-sicko pass is an Agent call with `subagent_type: "comment-sicko"`, or a `delegate_task` whose task opens with the comment-sicko role line.
 - **PreToolUse on the Agent tool.** Under T3, the hook blocks `run_in_background: true` and `isolation`, and sets a missing `run_in_background` to `false`.

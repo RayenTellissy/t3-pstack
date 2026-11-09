@@ -12,8 +12,8 @@ const hook = path.join(here, "pstack-hook.mjs");
 const steps = path.join(repo, "skills", "poteto-mode", "scripts", "steps");
 const CLEAN_ENV = { CLAUDE_CODE_ENTRYPOINT: "", T3CODE_THREAD_ID: "" };
 
-function sandbox() {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "pstack-hook-"));
+function sandbox(prefix = "pstack-hook-") {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   const project = path.join(home, "projects", "p");
   fs.mkdirSync(project, { recursive: true });
   return { home, transcript: path.join(project, "s1.jsonl"), session: "s1" };
@@ -125,6 +125,19 @@ test("pre-tool blocks gh pr create until every gate ran", () => {
   assert.doesNotMatch(reason, /`\/simplify`/);
 });
 
+test("reading no-comments is not its comment-sicko pass, and gh global flags do not skip the gate", () => {
+  const box = sandbox();
+  const reads = ["no-comments", "technical-writing", "unslop"].map((s) => tool("Read", { file_path: `/u/.claude/skills/${s}/SKILL.md` }));
+  write(box.transcript, [POTETO, tool("Skill", { skill: "simplify" }), ...reads]);
+  for (const command of ["gh pr create --fill", "gh --repo o/r pr create --fill", "gh -R o/r pr  create"]) {
+    const reason = run(box, "pre-tool", { tool_name: "Bash", tool_input: { command } }).hookSpecificOutput.permissionDecisionReason;
+    assert.match(reason, /comment-sicko pass/);
+    assert.doesNotMatch(reason, /unslop/);
+  }
+  fs.appendFileSync(box.transcript, lines([tool("mcp__t3-code__delegate_task", { task: "Read `~/.claude/agents/comment-sicko.md` in full and act as that agent." })]));
+  assert.equal(run(box, "pre-tool", prCreate), null);
+});
+
 test("pre-tool counts gates that ran in subagent transcripts", () => {
   const box = sandbox();
   write(box.transcript, [POTETO, tool("Skill", { skill: "simplify" })]);
@@ -165,8 +178,8 @@ test("malformed input never breaks the session", () => {
   assert.equal(execFileSync("node", [hook, "stop"], { input: "not json", encoding: "utf8" }), "");
 });
 
-test("installed hooks start node only for T3 Agent calls and PR-creating Bash calls", () => {
-  const box = sandbox();
+test("installed hooks start node only for T3 Agent calls and PR-creating Bash calls, from any home path", () => {
+  const box = sandbox("pstack $cash 'q' ");
   write(box.transcript, [POTETO]);
   fs.mkdirSync(path.join(box.home, "pstack"), { recursive: true });
   fs.symlinkSync(here, path.join(box.home, "pstack", "hooks"));
@@ -189,6 +202,8 @@ test("installed hooks start node only for T3 Agent calls and PR-creating Bash ca
   const agent = { tool_name: "Agent", tool_input: { prompt: "x" } };
   assert.equal(sh(command("Agent|Task"), agent), "");
   assert.match(sh(command("Agent|Task"), agent, { T3CODE_THREAD_ID: "t" }), /"updatedInput"/);
+  const stop = settings.hooks.Stop[1].hooks[0].command;
+  assert.match(sh(stop, reply("Prove It Works.")), /"decision":"block"/);
   install("--uninstall");
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(box.home, "settings.json"), "utf8")), { hooks: { Stop: [{ hooks: [{ type: "command", command: "afplay x" }] }] } });
 });

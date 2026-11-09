@@ -5,7 +5,8 @@ import { PSTACK_DIR, writeJson } from "../skills/poteto-mode/scripts/steps-lib.m
 
 const settingsPath = path.join(path.dirname(PSTACK_DIR), "settings.json");
 const MARK = "pstack/hooks/pstack-hook.mjs";
-const node = (event) => `node "${path.join(PSTACK_DIR, "hooks", "pstack-hook.mjs")}" ${event}`;
+const quote = (s) => `'${s.replace(/'/g, "'\\''")}'`;
+const node = (event) => `node ${quote(path.join(PSTACK_DIR, "hooks", "pstack-hook.mjs"))} ${event}`;
 const hook = (command) => ({ hooks: [{ type: "command", command, timeout: 30 }] });
 const uninstall = process.argv.includes("--uninstall");
 
