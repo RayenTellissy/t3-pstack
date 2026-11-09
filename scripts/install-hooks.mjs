@@ -14,7 +14,7 @@ const ours = {
   Stop: [hook(node("stop"))],
   PreToolUse: [
     { matcher: "Agent|Task", ...hook(`[ "$CLAUDE_CODE_ENTRYPOINT" = t3-code ] || [ -n "$T3CODE_THREAD_ID" ] || exit 0; ${node("pre-tool")}`) },
-    { matcher: "Bash", ...hook(`input=$(cat); case "$input" in *gh*pr*create*) printf '%s' "$input" | ${node("pre-tool")} ;; esac`) },
+    { matcher: "Bash", ...hook(`input=$(cat); case "$input" in *gh*pr*) printf '%s' "$input" | ${node("pre-tool")} ;; esac`) },
     { matcher: "mcp__.*create_pull_request", ...hook(node("pre-tool")) },
   ],
 };

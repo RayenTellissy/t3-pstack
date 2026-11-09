@@ -5,6 +5,7 @@ import { ledgerFile, potetoIndex, PSTACK_DIR, runDir, writeJson } from "../../sk
 import { isPoteto, missingGates, scanFile, sessionFacts, toolKind } from "./transcript.mjs";
 
 const PR_CREATE = /\bgh\b[^\n;&|]*?\spr\s+create\b/;
+const unquote = (command) => command.replace(/\\\r?\n/g, "").replace(/\\(.)/g, "$1").replace(/["']/g, "");
 const HARNESS = "`~/.claude/skills/poteto-mode/references/t3-harness.md` (Spawning)";
 const GATE_HELP = {
   simplify: "`/simplify` over the diff",
@@ -81,7 +82,7 @@ function onPreTool(input) {
     return null;
   }
 
-  const createsPr = (kind === "Bash" && PR_CREATE.test(String(toolInput.command || "").replace(/\\\r?\n/g, " "))) || /create_pull_request$/.test(String(input.tool_name));
+  const createsPr = (kind === "Bash" && PR_CREATE.test(unquote(String(toolInput.command || "")))) || /create_pull_request$/.test(String(input.tool_name));
   if (!createsPr) return null;
   const facts = potetoFacts(input, true);
   const missing = facts ? missingGates(facts) : [];
