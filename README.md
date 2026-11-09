@@ -1,45 +1,55 @@
-# pstack-claude
+# t3-pstack
 
-[pstack](https://github.com/cursor/plugins/tree/main/pstack), poteto's rigorous agent workflow skills, ported from Cursor to Claude Code.
+[pstack](https://github.com/cursor/plugins/tree/main/pstack), poteto's rigorous agent workflow skills, built for T3 Code. It forks [pstack-claude](https://github.com/RayenTellissy/pstack-claude) and adds what T3 needs to run every playbook, principle, and gate.
 
 The full README is [`pstack/README.md`](pstack/README.md). The walkthrough is the [pstack guide](pstack/docs/guide/README.md).
 
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/RayenTellissy/pstack-claude/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/RayenTellissy/t3-pstack/main/install.sh | sh
 ```
 
-The script downloads `main` and copies `skills`, `agents`, `output-styles`, and `pstack` into `~/.claude/`. Run the same command again to update. It replaces each pstack skill, agent, and output style and the guide, and removes any that upstream dropped. It keeps your model config, run stores, and your own skills, but you lose any edits or added files inside the installed pstack skills, and a skill of yours with the same name as a pstack skill is replaced. From a clone, `cp -R skills agents output-styles pstack ~/.claude/` works for a first install, but it removes nothing when you update.
+From a local checkout, run `PSTACK_SRC=$PWD sh install.sh`.
 
-Start a new Claude Code session, then run `/setup-pstack` to pick a reasoning budget, or skip it to keep the defaults. Use `/poteto-mode` at the start of any task that needs rigor. To keep it on every turn, run `/output-style poteto-mode`.
+The script copies `skills`, `agents`, `output-styles`, and `pstack` into `~/.claude/`, and adds the pstack hooks to `~/.claude/settings.json`. It backs the settings up to `settings.json.bak-pstack` first. Run the same command again to update. It keeps your model config, run stores, your own skills, and your other hooks. `node scripts/install-hooks.mjs --uninstall` removes the pstack hooks.
 
-The poteto-mode `watch-pr` script and the `/statechart` scripts need [Node.js](https://nodejs.org) 22.18 or later. `/statechart` also installs TLC and Java with [mise](https://mise.jdx.dev) on its first run.
+Start a new T3 Code thread, then run `/setup-pstack` to pick a budget and models, or skip it to keep the defaults. Use `/poteto-mode` at the start of any task that needs rigor. To keep it on every turn, run `/output-style poteto-mode`. The scripts need [Node.js](https://nodejs.org) 22.18 or later.
 
-## What changed from upstream
+## What T3 changes
 
-- Models. Opus takes the code at `high` effort, and judgment, prose, and the hardest changes at `xhigh`. Review panels add Fable as a second voice. `/setup-pstack` writes `~/.claude/pstack/models.md`. Upstream picks each subagent's reasoning level and fast or standard speed per job. Claude Code has no per-subagent fast mode, so the port adjusts only `effort`.
-- Subagents. `Task` becomes the Agent tool. Read-only reviewers use the bundled `pstack-readonly` agent. Cloud agents become subagents in their own git worktree.
-- Custom Mode becomes the `poteto-mode` output style.
-- Skills that use other pstack skills read them by path (`~/.claude/skills/<name>/SKILL.md`). Every pstack skill but `setup-pstack` sets `disable-model-invocation`, so the Skill tool refuses them.
-- Cursor-only dependencies map to Claude Code equivalents: `/simplify` for `/deslop`, browser automation or Bash with a PTY (`expect` or `script`) for the control skills, and skill-creator for `create-skill`.
-- Not ported: the benny automations, `make-bot-ui`, Origin, and upstream's own Claude Code plugin adapter (`docs/harness/`), which this port stands in for. Bugbot triage covers review bots in general.
+[`t3-harness.md`](skills/poteto-mode/references/t3-harness.md) holds every T3 rule, and each skill points at it where it applies.
 
-The first commit is the untouched upstream, so `git diff $(git rev-list --max-parents=0 HEAD) -M` shows the whole port.
+- **Step ledger.** T3 has no todo tool, so `skills/poteto-mode/scripts/steps` copies a playbook's steps verbatim into `~/.claude/pstack/runs/<session-id>/`. Each step closes as done with evidence or skipped with a reason. The ledger survives compaction.
+- **Spawning.** Agent calls run in the foreground. A child that needs its own checkout, a Codex model, or a life past the turn goes through `delegate_task`. Async children wake the thread when they finish, so pstack never polls them.
+- **Codex voices.** `/setup-pstack` offers each Codex model that T3 lists, written `codex/<model>`, for panels and verifiers.
+- **PRs.** Every PR is linked to the thread. Waits use `watch_pull_request`, never a polling loop. Delegated children never watch. They report the PR line and the parent watches.
+- **Surfaces.** UIs are driven with T3's preview tools, devices with its device tools, and charts go through `html_preview` and `html_render`.
+
+## Hooks
+
+The hooks enforce rules that the skill text alone could not hold in practice. An audit of 13 past poteto-mode runs found no task list in any of them. It also found principles cited without their leaf being read, and PRs opened from the main chat without `/simplify`, `/no-comments`, or **unslop**.
+
+| Hook | Blocks |
+|---|---|
+| Stop | A poteto-mode reply that cites a principle whose leaf this session never read. A session that opened a playbook without a step ledger. |
+| PreToolUse, `gh pr create` | A poteto-mode PR until `/simplify`, `/no-comments`, **technical-writing**, and **unslop** ran in the session or its subagents. |
+| PreToolUse, Agent | Under T3, an Agent call without `run_in_background: false`, or with `isolation`. |
+
+Each hook reads the transcript incrementally and caches what it has read, so a check on a long session takes milliseconds. A failure inside a hook never blocks the session. `touch ~/.claude/pstack/hooks.debug` logs every decision to `~/.claude/pstack/hooks.log`.
+
+## Checks
+
+```bash
+node scripts/check-t3.mjs
+node --test pstack/hooks/pstack-hook.test.mjs skills/poteto-mode/scripts/steps.test.mjs
+```
+
+`check-t3.mjs` checks that every principle, playbook, skill path, and agent reference resolves, and that every playbook yields ledger steps. It also flags any file that names a mechanism T3 replaces with no T3 rule beside it, which catches unported text from upstream.
 
 ## Keeping up with upstream
 
-[`scripts/upstream.json`](scripts/upstream.json) records the last upstream commit ported. Every Monday, the [Check upstream pstack](.github/workflows/check-upstream.yml) workflow compares it with upstream. When upstream has moved, it opens an issue labeled `upstream` that lists the new commits and every added, changed, renamed, or deleted file, by its path in this repo. New commits update the issue, and the workflow closes it once you are caught up. Run it by hand from the Actions tab.
-
-To port by hand:
-
-```bash
-node scripts/check-upstream.mjs
-node scripts/check-upstream.mjs --diff skills/swarm/SKILL.md
-node scripts/check-upstream.mjs --done <commit>
-```
-
-The first prints the same report, and exits 1 while there is something to port. The second prints one file's upstream diff, or all of them without a path. After you port the changes, the third records the commit the report named. Commit `scripts/upstream.json` with the port.
+[`scripts/upstream.json`](scripts/upstream.json) records the last upstream commit ported, and the [Check upstream pstack](.github/workflows/check-upstream.yml) workflow opens an issue when upstream moves. Port by hand with `node scripts/check-upstream.mjs`, then run the checks above before you record the commit with `--done <commit>`.
 
 ## License
 

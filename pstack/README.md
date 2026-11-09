@@ -17,12 +17,12 @@ fork it. improve it. make it yours. PRs are welcome!
 ## install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/RayenTellissy/pstack-claude/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/RayenTellissy/t3-pstack/main/install.sh | sh
 ```
 
 it copies `skills`, `agents`, `output-styles`, and `pstack` from `main` into `~/.claude/`. run it again to update, which also removes anything upstream dropped. it keeps your model config, run stores, and your own skills, but you lose any edits or added files inside the installed pstack skills.
 
-then start a new Claude Code session so it loads the skills, agents, and output style. the poteto-mode `watch-pr` script and the [`/statechart`](../skills/statechart/SKILL.md) scripts need Node.js 22.18 or later. `/statechart` also installs TLC and Java with [mise](https://mise.jdx.dev) on its first run. nothing else needs them.
+it also adds the pstack hooks to `~/.claude/settings.json` (`node scripts/install-hooks.mjs --uninstall` removes them). then start a new T3 Code thread so it loads the skills, agents, hooks, and output style. the T3 rules every skill follows are in [`t3-harness.md`](../skills/poteto-mode/references/t3-harness.md). the poteto-mode `watch-pr` script and the [`/statechart`](../skills/statechart/SKILL.md) scripts need Node.js 22.18 or later. `/statechart` also installs TLC and Java with [mise](https://mise.jdx.dev) on its first run. nothing else needs them.
 
 ## get started
 
