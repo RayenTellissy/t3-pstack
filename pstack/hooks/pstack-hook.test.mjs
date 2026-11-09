@@ -129,7 +129,7 @@ test("reading no-comments is not its comment-sicko pass, and gh global flags do 
   const box = sandbox();
   const reads = ["no-comments", "technical-writing", "unslop"].map((s) => tool("Read", { file_path: `/u/.claude/skills/${s}/SKILL.md` }));
   write(box.transcript, [POTETO, tool("Skill", { skill: "simplify" }), ...reads]);
-  for (const command of ["gh pr create --fill", "gh --repo o/r pr create --fill", "gh -R o/r pr  create", "gh --repo o/r \\\n pr create --fill", "gh pr cre\\\nate --fill", "gh 'pr' 'create' --fill", "gh pr c\\reate"]) {
+  for (const command of ["gh pr create --fill", "gh --repo o/r pr create --fill", "gh -R o/r pr  create", "gh --repo o/r \\\n pr create --fill", "gh pr cre\\\nate --fill", "gh 'pr' 'create' --fill", "gh pr c\\reate", "gh p'r' create", "gh p\\r new"]) {
     const reason = run(box, "pre-tool", { tool_name: "Bash", tool_input: { command } }).hookSpecificOutput.permissionDecisionReason;
     assert.match(reason, /comment-sicko pass/);
     assert.doesNotMatch(reason, /unslop/);
@@ -178,7 +178,7 @@ test("malformed input never breaks the session", () => {
   assert.equal(execFileSync("node", [hook, "stop"], { input: "not json", encoding: "utf8" }), "");
 });
 
-test("installed hooks start node only for T3 Agent calls and PR-creating Bash calls, from any home path", () => {
+test("installed hooks gate PR-creating Bash calls and skip node for Agent calls outside T3, from any home path", () => {
   const box = sandbox("pstack $cash 'q' ");
   write(box.transcript, [POTETO]);
   fs.mkdirSync(path.join(box.home, "pstack"), { recursive: true });
@@ -189,7 +189,7 @@ test("installed hooks start node only for T3 Agent calls and PR-creating Bash ca
   install();
   const settings = JSON.parse(fs.readFileSync(path.join(box.home, "settings.json"), "utf8"));
   assert.equal(settings.hooks.Stop.length, 2);
-  assert.equal(settings.hooks.PreToolUse.length, 3);
+  assert.equal(settings.hooks.PreToolUse.length, 2);
   const command = (matcher) => settings.hooks.PreToolUse.find((g) => g.matcher === matcher).hooks[0].command;
   const sh = (cmd, input, env = {}) =>
     execFileSync("sh", ["-c", cmd], {
@@ -197,9 +197,10 @@ test("installed hooks start node only for T3 Agent calls and PR-creating Bash ca
       env: { ...process.env, ...CLEAN_ENV, PSTACK_HOME: box.home, ...env },
       encoding: "utf8",
     });
-  assert.equal(sh(command("Bash"), { tool_name: "Bash", tool_input: { command: "ls" } }), "");
-  assert.match(sh(command("Bash"), prCreate), /"permissionDecision":"deny"/);
-  assert.match(sh(command("Bash"), { tool_name: "Bash", tool_input: { command: "gh 'pr' cre\\\nate" } }), /"permissionDecision":"deny"/);
+  const bash = command("Bash|mcp__.*create_pull_request");
+  assert.equal(sh(bash, { tool_name: "Bash", tool_input: { command: "ls" } }), "");
+  assert.match(sh(bash, prCreate), /"permissionDecision":"deny"/);
+  assert.match(sh(bash, { tool_name: "Bash", tool_input: { command: "gh p'r' cre\\\nate" } }), /"permissionDecision":"deny"/);
   const agent = { tool_name: "Agent", tool_input: { prompt: "x" } };
   assert.equal(sh(command("Agent|Task"), agent), "");
   assert.match(sh(command("Agent|Task"), agent, { T3CODE_THREAD_ID: "t" }), /"updatedInput"/);
