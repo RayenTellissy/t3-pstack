@@ -15,7 +15,7 @@ T3 has no `TaskCreate`, `TaskUpdate`, or `TodoWrite`, so every pstack skill trac
 - `steps note "<text>"` records state that has to survive a wake or a compaction, such as outstanding delegate task ids.
 - `steps show` prints the ledger. Paste its output into the first reply after `start` and into the final reply.
 
-The ledger lives in `~/.claude/pstack/runs/<session-id>/`, so it survives compaction. Re-read it with `steps show` after a compaction or a wake.
+The ledger lives in `~/.claude/pstack/runs/<session-id>/`, so it survives compaction. Re-read it with `steps show` after a compaction or a wake. A `delegate_task` child is a session of its own, so it keeps its own ledger for any playbook it runs.
 
 ## Spawning
 
@@ -34,6 +34,8 @@ Use the Agent tool when the child needs no separate checkout and finishes inside
 - A `delegate_task` child has no `subagent_type`. Open its task with the role. For `poteto-agent`, `pstack-readonly`, or `comment-sicko`, the first line is "Read `~/.claude/agents/<type>.md` in full and act as that agent." A `general-purpose` child needs no such line. A child also gets no parent history, so its brief stands alone, the same as an Agent brief.
 - `delegate_task` runs a child only in this thread's own project, and it rejects a `target.projectId` for any other project. A thread that works on a repo from outside that repo's project, such as a scratch thread, cannot start a worktree child for the repo. Tell the user that a worktree child needs a thread in the repo's project. Start a shared child only when the work needs no separate checkout.
 - A worktree child starts from the parent's current commit, and uncommitted edits stay out. When the child needs them, write them to a patch (`git diff HEAD > <run-dir>/scope.patch`) and tell the child to `git apply` it first. Every brief still names the exact SHA it works on.
+- A worktree child starts on a branch that T3 creates, with no untracked files, so it installs dependencies such as `node_modules` before it runs tests. A PR owner cuts its PR branch there. A verifier fetches the PR head and runs `git checkout --detach <sha>`, because git refuses to check out a branch that the author's worktree already holds.
+- A worktree stays on disk after its child finishes. After the PR merges, remove it and its branch per `playbooks/worktree-cleanup.md`.
 
 ### Parallel fan-out
 
@@ -45,7 +47,7 @@ Use the Agent tool when the child needs no separate checkout and finishes inside
 
 ## PRs
 
-- **Link every PR.** After `gh pr create`, or a push to a PR you took over, the next call is `link_pull_request`, or `link_pull_requests` with every layer of a stack. If linking fails, say so.
+- **Link every PR.** After `gh pr create`, or a push to a PR you took over, the next call is `link_pull_request`, or `link_pull_requests` with every layer of a stack. T3 often links a PR that a thread creates, so the call can return `alreadyLinked: true`. Make the call anyway. If linking fails, say so.
 - **Wait with `watch_pull_request`.** When a PR waits on checks or reviews, finish any push first, call `watch_pull_request`, and end the turn. T3 wakes the thread on failed checks, passing required checks, new comments or reviews, and conflicts. The watch stays on, so do not call it again on a wake. A wake is not a merge decision. Check readiness with a status pass.
 - **A status pass is one shot.** `~/.claude/skills/poteto-mode/scripts/watch-pr/watch-pr --status-only` (add `--queued-stack --stack-prs <bottom-to-top>` for a queue) gives GitHub's verdict once. Never run the polling watcher, `sleep` loops, `gh pr checks --watch`, `Monitor`, `ScheduleWakeup`, or `/loop` to wait on a PR.
 - **Delegated children never watch.** A child that owns a PR does one round: fix, push, link, and a status pass. It ends its report with the line `PR <full URL>, head <SHA>, checks and reviews <state>`. The parent watches the PR and starts a fresh child for the next round on a wake.
@@ -70,5 +72,6 @@ Use the Agent tool when the child needs no separate checkout and finishes inside
 t3-pstack installs hooks that turn the rules below into checks. A blocked call or reply names the fix. Make the fix and never route around the hook.
 
 - **Stop.** In a poteto-mode session, the hook blocks a reply that names a principle whose leaf `SKILL.md` this session never read. It also blocks a session that opened a playbook without a step ledger.
-- **PreToolUse on `gh pr create` and `gh pr new`.** In a poteto-mode session, the hook blocks a PR until this session, or one of its subagents, has run `/simplify` and the comment-sicko pass from `/no-comments`, and has read **technical-writing** and **unslop**. Reading `no-comments/SKILL.md` alone does not count. The comment-sicko pass is an Agent call with `subagent_type: "comment-sicko"`, or a `delegate_task` whose task opens with the comment-sicko role line. The hook reads the command text. It removes line continuations, backslash escapes, and quotes, then matches `gh`, any flags, `pr`, any flags, and `create` or `new`. So flags, split lines, and quoted words are caught. A command built from variables, `$'...'` quoting, `eval`, a script, or a `gh api` call is not caught, so the hook guards against a skipped step, not a determined bypass.
+- **PreToolUse on `gh pr create` and `gh pr new`.** In a poteto-mode session, the hook blocks a PR until this session, or one of its subagents, has run `/simplify` and the comment-sicko pass from `/no-comments`, and has read **technical-writing** and **unslop**. Reading `no-comments/SKILL.md` alone does not count. The comment-sicko pass is an Agent call with `subagent_type: "comment-sicko"`, or a `delegate_task` whose task opens with the comment-sicko role line. The hook reads the command text. It removes line continuations, backslash escapes, and quotes, then matches `gh`, any flags, `pr`, any flags, and `create` or `new`. So flags, split lines, and quoted words are caught. A command built from variables, `$'...'` quoting, `eval`, a script, or a `gh api` call is not caught, so the hook guards against a skipped step, not a determined bypass. Because it removes quotes, it also blocks a command that only mentions `gh pr create` in an argument, such as a `steps note`, until the gates ran. Reword the argument.
+- **Where hooks run.** Hooks run in Claude sessions and in their delegated Claude children. They do not run in Codex children, so a Codex child that opens a PR skips the PR gate. Give PR-owner roles to Claude children.
 - **PreToolUse on the Agent tool.** Under T3, the hook blocks `run_in_background: true` and `isolation`, and sets a missing `run_in_background` to `false`.
