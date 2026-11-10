@@ -39,6 +39,7 @@ for dir in skills agents output-styles pstack; do
   (cd "$src/$dir" && tar --exclude node_modules -cf - .) | (cd "$dest/$dir" && tar -xf -)
 done
 cp "$tmp/manifest" "$previous_manifest"
+[ -e "$dest/pstack/models.md" ] || cp "$dest/pstack/models.large.md" "$dest/pstack/models.md"
 node "$src/scripts/install-hooks.mjs"
 
 echo "t3-pstack ($label) is installed in $dest. Start a new T3 Code thread to load it."

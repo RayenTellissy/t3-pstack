@@ -23,11 +23,11 @@ Resolve each role value from `~/.claude/pstack/models.md` with this table. A ski
 
 | Value | Call |
 |---|---|
-| `opus <effort>`, `fable <effort>` | The Agent tool, with `model`, `effort`, and `run_in_background: false`. |
+| `opus <effort>`, `fable <effort>`, `haiku <effort>` | The Agent tool, with `model`, `effort`, and `run_in_background: false`. |
 | `inherit` | The Agent tool, with `run_in_background: false`, and no `model` or `effort`. |
 | `codex/<model> <effort>` | `delegate_task` with `target: {providerInstanceId: "codex", model: "<model>", options: {reasoningEffort: "<effort>"}}`. |
 
-Use the Agent tool when the child needs no separate checkout and finishes inside this turn. Use `delegate_task` in three cases: the value is a `codex/` entry, the child needs its own checkout, or the work must outlive this turn. The last case covers PR owners, Orchestrate and Autopilot workers, and anything a skill says to run in the background. When an `opus` or `fable` role goes through `delegate_task`, use `target: {providerInstanceId: "claudeAgent", model: "<id>", options: {effort: "<effort>"}}`, with the `<id>` that `orchestrator_capabilities` lists for that model family.
+Use the Agent tool when the child needs no separate checkout and finishes inside this turn. Use `delegate_task` in three cases: the value is a `codex/` entry, the child needs its own checkout, or the work must outlive this turn. The last case covers PR owners, Orchestrate and Autopilot workers, and anything a skill says to run in the background. When an `opus`, `fable`, or `haiku` role goes through `delegate_task`, use `target: {providerInstanceId: "claudeAgent", model: "<id>", options: {effort: "<effort>"}}`, with the `<id>` that `orchestrator_capabilities` lists for that model family.
 
 - **Never** pass `run_in_background: true` or `isolation` to the Agent tool. A hook blocks both. A separate checkout is `delegate_task` with `isolation: "worktree"`. Never make a child's checkout in the shell.
 - Call `orchestrator_capabilities` once per thread before the first `delegate_task`. When it does not list a value's provider or model, treat the value as rejected, follow the calling skill's fallback, and say so.

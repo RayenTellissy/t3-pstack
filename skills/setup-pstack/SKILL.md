@@ -11,57 +11,32 @@ Write `~/.claude/pstack/models.md`, the model config that sets pstack's model an
 
 ### 1. Models
 
-pstack runs on two models, passed as the Agent tool's `model`: `fable` (strongest, the second voice in review panels) and `opus` (the default for code and judgment). The alias `inherit` is also valid. It means the role runs on the parent session's model and effort. Offer no other models, with one exception. In a T3 Code session (`echo $CLAUDE_CODE_ENTRYPOINT` prints `t3-code`), load `orchestrator_capabilities` with ToolSearch, call it, and also offer each model of an enabled `codex` provider, written `codex/<model-id>`. These roles run through `delegate_task`, per `~/.claude/skills/poteto-mode/references/t3-harness.md`. They make the strongest second voice in a panel, because they come from another vendor. Say once that pstack's hooks do not run inside Codex children, so a code-writing role on Codex skips the PR gate.
+pstack runs on two models, passed as the Agent tool's `model`: `fable` (strongest, the second voice in review panels) and `opus` (the default for code and judgment). `haiku` is also valid, for fast, cheap fan-out roles whose output a stronger model checks, such as `how explorer`. The alias `inherit` is also valid. It means the role runs on the parent session's model and effort. Offer no other models, with one exception. In a T3 Code session (`echo $CLAUDE_CODE_ENTRYPOINT` prints `t3-code`), load `orchestrator_capabilities` with ToolSearch, call it, and also offer each model of an enabled `codex` provider, written `codex/<model-id>`. These roles run through `delegate_task`, per `~/.claude/skills/poteto-mode/references/t3-harness.md`. They make the strongest second voice in a panel, because they come from another vendor. Say once that pstack's hooks do not run inside Codex children, so a code-writing role on Codex skips the PR gate.
 
 ### 2. Load current state
 
-The default role-to-model mapping is the file shape shown in step 5 below. If `~/.claude/pstack/models.md` already exists, read it and treat its `# budget` line and its role values as the current choices. Otherwise start from those defaults. A line whose role is not in step 5, such as `how critics`, is from a retired role. Drop it.
+The default role-to-model mapping is the `large` preset in `~/.claude/pstack/models.large.md`. Read it. The install also copies it to `~/.claude/pstack/models.md` when that file does not exist. If `~/.claude/pstack/models.md` exists, read it and treat its `# budget` line and its role values as the current choices. Otherwise start from the preset. A line whose role is not in the preset, such as `how critics`, is from a retired role. Drop it.
 
 ### 3. Budget, map, and confirm
 
-**(a) Ask for a budget.** Use `AskUserQuestion`, or plain text in `-p` mode, where that tool is absent. Offer these four options with these exact labels, and name the current budget when the file records one. With no file, say that `large` matches the skill defaults.
+**(a) Ask for a budget.** Use `AskUserQuestion`, or plain text in `-p` mode, where that tool is absent. Offer these four options with these exact labels, and name the current budget when the file records one. With no file, recommend `large`.
 
 - `unlimited (max effort)`
 - `large (xhigh effort)`
 - `medium (high effort)`
 - `small (medium effort)`
 
-**(b) Apply it.** Build the working table from the skill defaults, and on a re-run keep any role you changed by model, list, or alias (`inherit`). `unlimited`, `medium`, and `small` set the effort of every entry, panel entries included, to `max`, `high`, or `medium`. `inherit` does not change. So `unlimited` turns `fable high` into `fable max`. A `codex/` entry follows the same rule as a `fable` entry. `large` keeps the defaults: every `fable` entry, the code-writing roles (feature, refactoring, bug-fix, perf-issue, hillclimb), `reflect tooling`, and `swarm workers` at `high`, `how explorer` at `medium`, and the other `opus` entries at `xhigh`. `small` turns them into `fable medium` and `opus medium`.
+**(b) Apply it.** Build the working table from the `large` preset, and on a re-run keep any role you changed by model, list, or alias (`inherit`). `unlimited`, `medium`, and `small` set the effort of every entry, panel entries included, to `max`, `high`, or `medium`. `inherit` does not change. So `unlimited` turns `fable medium` into `fable max`, and `small` turns `haiku high` into `haiku medium`. A `codex/` entry follows the same rule as a `fable` entry. `large` keeps the preset as written. The preset's `codex/` entries apply only under T3, and only for a model that `orchestrator_capabilities` lists. Otherwise drop them from the panels and say so.
 
-**(c) Show the roles and confirm.** Show every role with its model and effort. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles, offering `fable`, `opus`, and `inherit` as the options, plus the `codex/<model-id>` values from step 1 under T3. Use `AskUserQuestion`, or plain text in `-p` mode. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, `inherit` entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena runs one judge. It tries only values on a model other than the parent's, in list order, so order it by preference. An `inherit` value never judges. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
+**(c) Show the roles and confirm.** Show every role with its model and effort. Also list each line step 2 dropped. Ask whether to accept as-is or change specific roles, offering `fable`, `opus`, `haiku`, and `inherit` as the options, plus the `codex/<model-id>` values from step 1 under T3. Use `AskUserQuestion`, or plain text in `-p` mode. For panel roles (arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, `inherit` entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena runs one judge. It tries only values on a model other than the parent's, in list order, so order it by preference. An `inherit` value never judges. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
 
 ### 4. Validate
 
-Every model written is `fable`, `opus`, `inherit`, or, under T3, `codex/<model-id>` for an id that `orchestrator_capabilities` listed. Every effort is `low`, `medium`, `high`, `xhigh`, or `max`. If a choice fails, stop and ask again.
+Every model written is `fable`, `opus`, `haiku`, `inherit`, or, under T3, `codex/<model-id>` for an id that `orchestrator_capabilities` listed. Every effort is `low`, `medium`, `high`, `xhigh`, or `max`. If a choice fails, stop and ask again.
 
 ### 5. Write the file
 
-Write `~/.claude/pstack/models.md` with a `# budget` line with the chosen label, and one line per role, using the same labels poteto-mode uses. Create `~/.claude/pstack/` if it is missing. Overwrite the whole file so re-runs stay idempotent. Shape:
-
-```
-# pstack model configuration. One line per role. Delete a line to fall back to the skill default.
-# A value is `<model> <effort>`, passed as the Agent call's `model` and `effort`.
-# `inherit` as a value: the role runs on the parent session's model (omit `model` and `effort`). `inherit` entries in a panel list still count toward its fan-out.
-# Under T3, `codex/<model> <effort>` runs through delegate_task. See ~/.claude/skills/poteto-mode/references/t3-harness.md.
-# budget: large (xhigh)
-feature, refactoring: opus high
-bug-fix: opus high
-perf-issue: opus high
-hillclimb: opus high
-judgment and prose: opus xhigh
-hardest tasks: opus xhigh
-how explorer: opus medium
-how explainer: opus xhigh
-why investigators: opus xhigh
-why synthesizer: opus xhigh
-reflect tooling: opus high
-reflect judgment, divergent, synthesizer: opus xhigh
-arena runners: fable high, opus xhigh
-arena cross-judge pool: fable high, opus xhigh
-swarm workers: opus high
-architect runners: fable high, opus xhigh
-interrogate reviewers: fable high, opus xhigh
-```
+Write `~/.claude/pstack/models.md` in the shape of `~/.claude/pstack/models.large.md`: its comment lines, a `# budget` line with the chosen label, and one line per role with the preset's role labels. Create `~/.claude/pstack/` if it is missing. Overwrite the whole file so re-runs stay idempotent. Never edit `models.large.md`, because the install replaces it.
 
 ### 6. Confirm
 
