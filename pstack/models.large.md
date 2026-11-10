@@ -15,8 +15,8 @@ why investigators: opus high
 why synthesizer: opus xhigh
 reflect tooling: opus medium
 reflect judgment, divergent, synthesizer: opus xhigh
-arena runners: opus high, fable medium, codex/gpt-6.1-sol high, codex/gpt-6-astra high
-arena cross-judge pool: opus xhigh, fable medium, codex/gpt-6.1-sol high, codex/gpt-6-astra high
+arena runners: opus high, fable medium, codex/gpt-6.1-sol xhigh, codex/gpt-6-astra xhigh
+arena cross-judge pool: opus xhigh, fable medium, codex/gpt-6.1-sol xhigh, codex/gpt-6-astra xhigh
 swarm workers: opus high
-architect runners: opus xhigh, fable medium, codex/gpt-6.1-sol high, codex/gpt-6-astra high
-interrogate reviewers: opus xhigh, fable medium, codex/gpt-6.1-sol high, codex/gpt-6-astra high
+architect runners: opus xhigh, fable medium, codex/gpt-6.1-sol xhigh, codex/gpt-6-astra xhigh
+interrogate reviewers: opus xhigh, fable medium, codex/gpt-6.1-sol xhigh, codex/gpt-6-astra xhigh
