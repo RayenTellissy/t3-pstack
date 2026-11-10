@@ -22,7 +22,7 @@ Run:
 /setup-pstack
 ```
 
-[`/setup-pstack`](../../../skills/setup-pstack/SKILL.md) asks for a reasoning budget, shows you each role (code delegates, judgment, the review panels) with its model and effort, and asks what you want. pstack runs on two models, `fable` and `opus`. Answer the questions. It writes `~/.claude/pstack/models.md`, a small model config that pstack skills read each time they pick a model.
+[`/setup-pstack`](../../../skills/setup-pstack/SKILL.md) asks for a reasoning budget, shows you each role (code delegates, judgment, the review panels) with its model and effort, and asks what you want. pstack runs on two models, `fable` and `opus`. `haiku` is also valid for fast, cheap fan-out roles whose output a stronger model checks, such as `how explorer`. Answer the questions. It writes `~/.claude/pstack/models.md`, a small model config that pstack skills read each time they pick a model.
 
 The defaults run Opus at `high` for code-writing roles and at `xhigh` for everything else, and Fable at `high` in the review panels. That is the `large` budget. `unlimited` lifts every role to `max`. `medium` and `small` lower the effort and spend fewer tokens.
 
